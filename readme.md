@@ -1,4 +1,4 @@
-# Learning to Identify Top Elo Ratings
+# Learning to Identify Top Elo Ratings with A Dueling Bandits Approach
 
 We propose two algorithms MaxIn-Elo and MaxIn-mElo to solve the top players identification on the transitive and intransitive settings. 
 All winning probability matrices of games are saved in file 'games/'.
