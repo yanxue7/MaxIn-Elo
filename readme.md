@@ -55,4 +55,3 @@ You can get the results of different C of our MaxIn-mElo on an intransitive game
 ```
 python compare_c.py
 ```
-# MaxIn-Elo
