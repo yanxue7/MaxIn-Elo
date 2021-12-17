@@ -25,7 +25,7 @@ Then you can plot the results of top-1 on the Elo model by running:
 ```
 python Elo_plot.py Max 0
 ```
-All figures are save in file "finalplot/".
+All figures are save in file **finalplot/**.
 
 For the mElo model, you can tune the best parameters of the top-1 performance on intransitive games by running:
 ```
