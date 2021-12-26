@@ -1,4 +1,4 @@
-# Learning to Identify Top Elo Ratings with A Dueling Bandits Approach
+# Learning to Identify Top Elo Ratings
 
 We propose two algorithms MaxIn-Elo and MaxIn-mElo to solve the top players identification on the transitive and intransitive settings. 
 All winning probability matrices of games are saved in file 'games/'.
@@ -25,7 +25,9 @@ Then you can plot the results of top-1 on the Elo model by running:
 ```
 python Elo_plot.py Max 0
 ```
-All figures are save in file **finalplot/**.
+All figures are save in file **finalplot/**. And the results of top-1 of Elo showed in figure 2 are obtained:
+
+<img src="/Users/yanxue/Library/Application Support/typora-user-images/image-20211226172610725.png" alt="image-20211226172610725" style="zoom:50%;" />
 
 For the mElo model, you can tune the best parameters of the top-1 performance on intransitive games by running:
 ```
@@ -36,14 +38,20 @@ Then you can plot the results of top-1 on the mElo model by running:
 python Elo_plot.py Max 1
 ```
 
+The results of top-1 on mElo in Figure 3 are obtained:
+
+<img src="/Users/yanxue/Library/Application Support/typora-user-images/image-20211226172827881.png" alt="image-20211226172827881" style="zoom:50%;" />
+
 ##### Results of top-k identification 
+
 You can get the results of top-k identification of all baselines by running:
 ```
 sh runelo.sh
 python topk_plot.py
 ```
 
-##### Comparison of different $\gamma$ 
+##### Comparison of different $\gamma$
+
 You can get the results of different $\gamma$ of our MaxIn-Elo on transitive games by running:
 ```
 python compare_gamma.py
@@ -55,3 +63,19 @@ You can get the results of different C of our MaxIn-mElo on an intransitive game
 ```
 python compare_c.py
 ```
+
+##### Comparison of different batch size $\tau$
+
+You can get the results of different batch size $\tau$ of our MaxIn-Elo on an transitive game by running:
+
+```
+sh run_batch.sh
+python batch_plot.py 0
+```
+
+Then the results of different batch size $\tau$ of our MaxIn-Elo on an intransitive game can be obtained by running:
+
+```
+python batch_plot.py 1
+```
+
