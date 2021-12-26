@@ -139,9 +139,15 @@ class MaxInELO():
         if y[0] == y[1]:
             y[1] = 1-y[0]
         x=x*self.alpha
-        clf = LogisticRegression(penalty='none', fit_intercept=False, solver='lbfgs').fit(x, y)
-        theta_hat = clf.coef_[0]
-        theta_hat= theta_hat/(self.g2*np.max(np.abs(theta_hat)))         #get MLE result
+        if self.tau>1:
+            clf = LogisticRegression(penalty='none', fit_intercept=False, solver='lbfgs').fit(x, y)
+            theta_hat = clf.coef_[0]
+            theta_hat= theta_hat/(self.g2*np.max(np.abs(theta_hat)))         #get MLE result
+        else:
+            theta_hat = np.zeros(self.d)
+        # clf = LogisticRegression(penalty='none', fit_intercept=False, solver='lbfgs').fit(x, y)
+        # theta_hat = clf.coef_[0]
+        # theta_hat= theta_hat/(self.g2*np.max(np.abs(theta_hat)))         #get MLE result
 
         x2=np.linalg.norm(x=theta_hat, ord=2)
 
