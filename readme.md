@@ -27,7 +27,7 @@ python Elo_plot.py Max 0
 ```
 All figures are save in file **finalplot/**. And the results of top-1 of Elo showed in figure 2 are obtained:
 
-<img src="/Users/yanxue/Library/Application Support/typora-user-images/image-20211226172610725.png" alt="image-20211226172610725" style="zoom:50%;" />
+<img src="https://github.com/yanxue7/MaxIn-Elo/blob/main/src/figure2_of_elo.png" />
 
 For the mElo model, you can tune the best parameters of the top-1 performance on intransitive games by running:
 ```
@@ -35,12 +35,13 @@ sh runmelo.sh
 ```
 Then you can plot the results of top-1 on the mElo model by running:
 ```
+
 python Elo_plot.py Max 1
 ```
 
 The results of top-1 on mElo in Figure 3 are obtained:
 
-<img src="/Users/yanxue/Library/Application Support/typora-user-images/image-20211226172827881.png" alt="image-20211226172827881" style="zoom:50%;" />
+<img src="https://github.com/yanxue7/MaxIn-Elo/blob/main/src/figure3_of_melo.png" />
 
 ##### Results of top-k identification 
 
