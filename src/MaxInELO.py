@@ -70,7 +70,7 @@ class MaxInELO():
     def initial(self):
         if self.melo == 1:
             if self.dim>0:
-                self.MC = np.random.normal(loc=0.0,scale=1.0/self.dim,size=(self.K,self.dim))
+                self.MC = np.random.normal(loc=0.0,scale=1.0/8,size=(self.K,self.dim))
         else:
             self.MC = np.zeros([self.K, self.dim], dtype=np.float64)
 
