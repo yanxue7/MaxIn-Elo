@@ -31,10 +31,7 @@ game_name=''
 path=''
 name=sys.argv[1]
 melo=int(sys.argv[2])
-if melo==1:
-    T=2000
-else:
-    T=1000
+T=2000
 
 if name=='random':
     parameters = {
@@ -89,9 +86,6 @@ if name=='MaxInELO':
 def process(game):
     global T,d,K,iter,game_name,path,name
     game_name=game
-
-
-
     model = 'logistic'
     dist = 'ber'
     if dist != 'ber' and model == 'logistic':
@@ -126,7 +120,7 @@ def get_payoff(game_name):
     else:
         payoff=np.load('games/{}.npy'.format(game_name))
         K = payoff.shape[0]
-        T=1000
+        T=2000
     return payoff,K
 
 def get_Avg_para(game_name):

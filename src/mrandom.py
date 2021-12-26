@@ -1,8 +1,6 @@
 import numpy as np
 import time
 import random
-#random.seed(1)
-#np.random.seed(1)
 from scipy import stats
 from common_funcs import get_NDCG, inverseP,RR
 
@@ -52,7 +50,7 @@ class Rand():
         for k in range(self.dim//2):
             sum+=self.C[i][k*2]*self.C[j][k*2+1]-self.C[j][k*2]*self.C[i][k*2+1]
         return sum
-    def sampling(self,alpha,eta,tau,meta,delta,save_rate=1):#alpha, lr, tau, meta, delta
+    def sampling(self,alpha,eta,tau,meta,delta,save_rate=1):
         self.initial()
         self.eta=eta
         self.meta=eta
@@ -86,7 +84,7 @@ class Rand():
             delta=ot-self.f(self.r[xt]-self.r[yt]+Csum)
 
             xt_new=self.r[xt]+self.eta*delta
-            yt_new=self.r[yt]-self.eta*delta#*self.alpha*(1-ot-self.f(self.r[yt]-self.r[xt]))
+            yt_new=self.r[yt]-self.eta*delta
             self.r[xt]=xt_new
             self.r[yt]=yt_new
             if self.dim>0:
@@ -125,34 +123,13 @@ class Rand():
             CE+=1.0*self.pairwiseh[x][i]/(self.gamma[x]+self.gamma[i]+1e-8)
         return 1.0*w/CE
     def query(self,x,y,t):
-        #random.seed(self.seed)
 
         if self.adver==False:
             return np.random.binomial(1,p=self.P[x][y])
 
 
-    def tran_best_correct(self,pre,true,K):
-        true_ranking=np.argsort(-true)[0:K]
-
-        truescore=[]
-        prescore=[]
-        for i in range(K):
-            index=true_ranking[i]
-            truescore.append(true[index])
-            prescore.append(pre[index])
-        tau, p_value = stats.kendalltau(truescore, prescore)
-        return tau
 
 
-    def tran_best_index(self,pre,true):
-
-        pre_best = np.max(pre)
-        pre_best_indexs = np.argwhere(pre == pre_best).reshape(-1).tolist()
-        x=[]
-        for index in pre_best_indexs:
-            x.append(self.ranking[index])
-        x=np.array(x)
-        return x.mean()
 
     def get_ranking(self,Borda):
         Bordar=np.sort(-Borda)
@@ -166,28 +143,3 @@ class Rand():
         Ranking = np.array(Ranking)
         return Ranking
 
-    def Perror(self, pre,K):
-        F_error = 0
-        pre_P = np.zeros([self.K, self.K])
-        true_rank = np.argsort(-self.true_theta)[0:K]
-        for l in range(K):
-            i = true_rank[l]
-            for g in range(K):
-                j=true_rank[g]
-                if self.melo == 0:
-                    pre_P[i, j] = self.f(pre[i] - pre[j])
-                else:
-                    pre_P[i, j] = self.f(
-                        pre[i] - pre[j] +self.cal_Csum(i,j))
-                F_error += np.square(pre_P[i, j] - self.P[i, j])
-        F_error = np.sqrt(F_error/(K*K))
-        return F_error
-    def total_rank(self,pre,true,K):
-        true_top=np.argsort(-true)[0:K]
-        pre_top=np.argsort(-pre)[0:K]
-
-
-        interlist=list(set(true_top)&set(pre_top))
-
-        #tau, p_value = stats.weightedtau(true, pre)
-        return len(interlist)/K

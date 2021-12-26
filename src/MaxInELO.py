@@ -8,18 +8,13 @@ import random
 from common_funcs import get_NDCG, inverseP,RR
 from scipy import stats
 import os
-# os.environ['OPENBLAS_NUM_THREADS'] = '1'
-#random.seed(1)
-#np.random.seed(1)
+
 class MaxInELO():
     def __init__(self,K,T,iter,payoff,melo,dim=8):
         self.K=K
         self.T=T
         self.iter=iter
-        #self.C=0.2
-        self.tau=100#int(self.C*np.log(self.T))#tau
-        #print(self.tau)
-        #self.alpha = 5#np.log(10) / 400
+        self.tau=100
         self.alpha_ts=0.1
         self.r=np.zeros([self.K])
 
@@ -39,7 +34,7 @@ class MaxInELO():
         self.etagd=0.01
         self.dim=dim
 
-        self.X = np.eye(self.K)#np.random.uniform(lb, ub, (self.T,self.K, self.d))
+        self.X = np.eye(self.K)
         self.d=self.K
 
         self.melo=melo
@@ -47,12 +42,11 @@ class MaxInELO():
         self.true_theta=inverseP(self.P)
         self.ranking=self.get_ranking(self.true_theta)
         self.optimal=np.max(self.true_theta)
-        #self.grad_r=self.get_hodge_decomposition(self.)
-        if melo==1:
-            self.MC = np.ones([self.K, dim], dtype=np.float64)/self.dim#0.75
+        if melo==1 and self.dim>0:
+            self.MC = np.ones([self.K, dim], dtype=np.float64)/self.dim
         else:
             self.dim=0
-            self.MC=np.zeros([self.K,self.dim],dtype=np.float64)#*0.1 np.random.random([self.K,2])
+            self.MC=np.zeros([self.K,self.dim],dtype=np.float64)
 
         np.set_printoptions(precision=3, suppress=True)
 
@@ -64,7 +58,6 @@ class MaxInELO():
 
 
     def grad(self, x, y, theta, lamda=0):
-        #x=x*self.alpha
         return self.alpha*x * (-y + 1 / (1 + np.exp(-x.dot(theta)))) + 2 * lamda * theta
     def calP(self,xt,yt,t):
 
@@ -77,7 +70,7 @@ class MaxInELO():
     def initial(self):
         if self.melo == 1:
             if self.dim>0:
-                self.MC = np.random.normal(loc=0.0,scale=1.0/self.dim,size=(self.K,self.dim))#np.random.standard_normal(size=(self.K,8))#np.ones([self.K, self.dim], dtype=np.float64) /self.dim  # 0.75
+                self.MC = np.random.normal(loc=0.0,scale=1.0/self.dim,size=(self.K,self.dim))
         else:
             self.MC = np.zeros([self.K, self.dim], dtype=np.float64)
 
@@ -91,15 +84,13 @@ class MaxInELO():
         self.meta=g1
         vr=alpha #balance parameter
         self.eta=eta # learning rate of elo
-        self.tau=tau# initial batch size
-        #self.MC*=g1 # matrix initalization of melo
+        self.tau=tau # initial batch size
         self.g2=g2 # normlize MLE of first batch size
 
         self.CT=1
         # initialize historical matrix V
         eps=10**(-6)
         self.Vnorm= np.identity(self.d) * eps
-
         #  define list to save result
         top1cor=[]
         top1dis=[]
@@ -124,7 +115,7 @@ class MaxInELO():
 
         for t in range(self.tau):
             All_ratings.append(np.zeros(self.K))
-            self.reward=self.true_theta#self.X.dot(self.true_theta)
+            self.reward=self.true_theta
             xt, yt = random.choice(self.pairs)
             ot = np.random.binomial(1, p=self.calP(xt,yt,t))
             history.append((xt, yt, ot))
@@ -169,13 +160,13 @@ class MaxInELO():
 
         B_inv=np.linalg.inv(self.Vnorm)# inverse
         for t in range(self.tau, self.T):
-            self.reward = self.true_theta#np.dot(self.X, self.true_theta)
+            self.reward = self.true_theta
             if t % self.tau == 0:
                 j = t//self.tau
                 vr=alpha#/j
                 eta = self.eta/ j
                 meta=self.meta
-                theta_tilde += eta * grad ##??why add
+                theta_tilde += eta * grad
                 distance = np.linalg.norm(theta_tilde - theta_hat)
                 if distance > 2:
                     theta_tilde = theta_hat + 2 * (theta_tilde - theta_hat) / distance
@@ -192,14 +183,14 @@ class MaxInELO():
             UCB= np.zeros((self.K,self.K))
             for i in range(self.K):
                 for j in range(self.K):
-                    UCB[i,j]=vr*np.sqrt(B_inv[i,i]-B_inv[i,j]-B_inv[j,i]+B_inv[j,j])#(feature.T.dot(B_inv).dot(feature))
+                    UCB[i,j]=vr*np.sqrt(B_inv[i,i]-B_inv[i,j]-B_inv[j,i]+B_inv[j,j])
             C=[]
             for i in range(self.K):
                 flag=1
                 for j in range(self.K):
                     if i!=j:
                         MCsum=self.cal_Csum(i,j)
-                        h=theta_bar[i]-theta_bar[j]+UCB[i,j]+MCsum#self.MC[i][0]*self.MC[j][1]-self.MC[j][0]*self.MC[i][1]
+                        h=theta_bar[i]-theta_bar[j]+UCB[i,j]+MCsum
                         if h<0:
                             flag=0
                             break
@@ -239,7 +230,7 @@ class MaxInELO():
             MCsum = self.cal_Csum(xt, yt)
             delta = ot - self.f(self.r[xt] - self.r[yt] +MCsum)
             grad[xt]+=delta
-            grad[yt]+=-delta  # *self.alpha*(1-ot-self.f(self.r[yt]-self.r[xt]))
+            grad[yt]+=-delta
             if self.dim>0:
                 for i in range(self.dim//2):
                     i0 = delta * self.MC[yt][2*i+1]
@@ -275,22 +266,11 @@ class MaxInELO():
         else:
             return [top1cor,NDCG3,NDCG5,Reg,Armx,Army]
 
-    def gupdate(self,x):
-
-        w=self.W[x]
-        if w==0:
-            return 0
-        CE=0
-        for i in range(self.K):
-            CE+=1.0*self.pairwiseh[x][i]/(self.gamma[x]+self.gamma[i]+1e-8)
-        return 1.0*w/CE
 
 
-    def predict_p(self,ri, rj):
-        return 1.0 / (1.0 + np.exp(- self.alpha*(ri - rj)))
+
     def calelo_reg(self,x,y):
         tru=self.optimal
-        #print(x,y,tru)
         rx=self.reward[x]
         ry=self.reward[y]
 
@@ -298,20 +278,6 @@ class MaxInELO():
         return 0.5*((tru-rx)
                     +(tru-ry))
 
-
-
-    def tran_best_correct(self,pre,true,K):
-        return self.Perror(pre,K)
-
-
-    def tran_best_index(self,pre,true):
-        pre_best = np.max(pre)
-        pre_best_indexs = np.argwhere(pre == pre_best).reshape(-1).tolist()
-        x = []
-        for index in pre_best_indexs:
-            x.append(self.ranking[index])
-        x = np.array(x)
-        return x.mean()
 
     def get_ranking(self,Borda):
         Bordar=np.sort(-Borda)
@@ -327,28 +293,3 @@ class MaxInELO():
 
 
 
-    def Perror(self, pre, K):
-        F_error = 0
-        pre_P = np.zeros([self.K, self.K])
-        true_rank = np.argsort(-self.true_theta)[0:K]
-        for l in range(K):
-            i = true_rank[l]
-            for g in range(K):
-                j = true_rank[g]
-                if self.melo == 0:
-                    pre_P[i, j] = self.f(pre[i] - pre[j])
-                else:
-                    pre_P[i, j] = self.f(
-                        pre[i] - pre[j] + self.MC[i][0] * self.MC[j][1] - self.MC[j][0] * self.MC[i][1])
-                F_error += np.square(pre_P[i, j] - self.P[i, j])
-        F_error = np.sqrt(F_error)
-        return F_error
-
-    def total_rank(self, pre, true, K):
-        true_top = np.argsort(-true)[0:K]
-        pre_top = np.argsort(-pre)[0:K]
-
-        interlist = list(set(true_top) & set(pre_top))
-
-        # tau, p_value = stats.weightedtau(true, pre)
-        return len(interlist)

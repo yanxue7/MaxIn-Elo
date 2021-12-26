@@ -13,10 +13,7 @@ class EloSMLE():
         self.K=K
         self.T=T
         self.iter=iter
-        #self.C=0.2
-        self.tau=100#int(self.C*np.log(self.T))#tau
-        #print(self.tau)
-        #self.alpha = 5#np.log(10) / 400
+        self.tau=100
         self.alpha_ts=0.1
         self.r=np.zeros([self.K])
         self.melo=melo
@@ -35,14 +32,12 @@ class EloSMLE():
         self.GD_iter=1
         self.etagd=0.01
 
-
-        self.X = np.eye(self.K)#np.random.uniform(lb, ub, (self.T,self.K, self.d))
+        self.X = np.eye(self.K)
         self.d=self.K
 
         self.P = payoff
         self.true_theta = inverseP(self.P)
         self.ranking=self.get_ranking(self.true_theta)
-        #self.C=np.ones([self.K,2],dtype=np.float32)
 
         self.optimal=np.max(self.true_theta)
         np.set_printoptions(precision=3, suppress=True)
@@ -54,7 +49,6 @@ class EloSMLE():
             return np.exp(x) / (1 + np.exp(x))
 
     def grad(self, x, y, theta, lamda=0):
-        #x=x*self.alpha
         return self.alpha*x * (-y + 1 / (1 + np.exp(-x.dot(theta)))) + 2 * lamda * theta
 
     def sampling(self,alpha,eta,tau,g1,g2,save_rate=1,pr=0):
@@ -66,7 +60,7 @@ class EloSMLE():
         NDCG5=[]
         All_ratings=[]
         regret=np.zeros([self.T])
-        self.alpha=1#alpha
+        self.alpha=1
 
         self.tau=tau
         self.g1=g1
@@ -96,7 +90,7 @@ class EloSMLE():
         t=0
 
         for t in range(self.tau):
-            self.reward=self.true_theta#self.X.dot(self.true_theta)
+            self.reward=self.true_theta
             xt, yt = random.choice(pairs)
             ot = np.random.binomial(1, p=self.P[xt][yt])
             history.append((xt, yt, ot))
@@ -121,17 +115,16 @@ class EloSMLE():
 
         B_inv=np.linalg.inv(self.Vnorm)
         for t in range(self.tau, self.T):
-            self.reward = self.true_theta#np.dot(self.X, self.true_theta)
+            self.reward = self.true_theta
             vr=alpha
 
             clf = LogisticRegression(penalty='none', fit_intercept=False, solver='lbfgs').fit(x, y)
             theta_hat = clf.coef_[0]
             theta_bar = theta_hat / (3 * np.max(np.abs(theta_hat)))#normlize
-            # theta_bar = theta_hat #no normlize
             UCB= np.zeros((self.K,self.K))
             for i in range(self.K):
                 for j in range(self.K):
-                    UCB[i,j]=vr*np.sqrt(B_inv[i,i]-B_inv[i,j]-B_inv[j,i]+B_inv[j,j])#(feature.T.dot(B_inv).dot(feature))
+                    UCB[i,j]=vr*np.sqrt(B_inv[i,i]-B_inv[i,j]-B_inv[j,i]+B_inv[j,j])
             C=[]
 
             for i in range(self.K):
@@ -146,8 +139,7 @@ class EloSMLE():
                     C.append(i)
             pairs=None
             maxun=-10000
-            #if t%200==0:
-            #print(t)
+
             if pr==1 and t%100==0:
                 print(C)
             lenc=len(C)
@@ -170,7 +162,7 @@ class EloSMLE():
             tmp = np.zeros([self.K])
             for i in range(self.K):
                 tmp[i] = B_inv[i][xt] - B_inv[i][yt]
-            fdt = tmp[xt] - tmp[yt]  # feature.dot(tmp)
+            fdt = tmp[xt] - tmp[yt]
             B_inv -= np.outer(tmp, tmp) / (1 + fdt)
 
             x = np.concatenate((x, [self.X[xt] - self.X[yt]]), axis=0)
@@ -220,19 +212,8 @@ class EloSMLE():
                     +(tru-ry))
 
 
-    def tran_best_correct(self,pre,true,K):
 
-        return self.Perror(pre,K)
 
-    def tran_best_index(self,pre,true):
-
-        pre_best = np.max(pre)
-        pre_best_indexs = np.argwhere(pre == pre_best).reshape(-1).tolist()
-        x=[]
-        for index in pre_best_indexs:
-            x.append(self.ranking[index])
-        x=np.array(x)
-        return x.mean()
 
     def get_ranking(self,Borda):
         Bordar=np.sort(-Borda)
@@ -246,28 +227,3 @@ class EloSMLE():
         Ranking = np.array(Ranking)
         return Ranking
 
-    def Perror(self, pre, K):
-        F_error = 0
-        pre_P = np.zeros([self.K, self.K])
-        true_rank = np.argsort(-self.true_theta)[0:K]
-        for l in range(K):
-            i = true_rank[l]
-            for g in range(K):
-                j = true_rank[g]
-                if self.melo == 0:
-                    pre_P[i, j] = self.f(pre[i] - pre[j])
-                else:
-                    pre_P[i, j] = self.f(
-                        pre[i] - pre[j] + self.C[i][0] * self.C[j][1] - self.C[j][0] * self.C[i][1])
-                F_error += np.square(pre_P[i, j] - self.P[i, j])
-        F_error = np.sqrt(F_error)
-        return F_error
-
-    def total_rank(self, pre, true, K):
-        true_top = np.argsort(-true)[0:K]
-        pre_top = np.argsort(-pre)[0:K]
-
-        interlist = list(set(true_top) & set(pre_top))
-
-        # tau, p_value = stats.weightedtau(true, pre)
-        return len(interlist)

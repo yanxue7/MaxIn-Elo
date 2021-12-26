@@ -65,11 +65,9 @@ def get_performance(path,game):
 
     reg=np.load(path+'_'+'Reg.npy')
     T=reg.shape[-1]
-    if melo==1:
 
-        st=1800
-    else:
-        st=200
+    st=T//2
+
     en=T
     NDCG1=reg[0,st:en].sum()
     regret = reg[-3, en-1]

@@ -34,7 +34,7 @@ class GridSearch:
 
 
     def sgdts_sim(self,para):
-        seed,alpha,lr,tau,meta,delta=para#8001, 1, 1, 40, 0.01, 0.01
+        seed,alpha,lr,tau,meta,delta=para
 
         t0 = time.time()
 

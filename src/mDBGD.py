@@ -2,8 +2,6 @@ import numpy as np
 
 import time
 import random
-#random.seed(1)
-#np.random.seed(1)
 from scipy import stats
 from common_funcs import get_NDCG, inverseP,RR
 
@@ -14,7 +12,7 @@ class DBGD():
         self.iter=iter
 
 
-        self.alpha = 1#0.01#np.log(10) / 400
+        self.alpha = 1
         self.r=np.zeros([self.K])
         self.s=np.zeros([self.K])
         self.num=np.zeros([self.K])
@@ -34,7 +32,7 @@ class DBGD():
         if melo==1:
             self.C = np.ones([self.K, 8], dtype=np.float64)
         else:
-            self.C= np.random.standard_normal(size=(self.K,8))#np.zeros([self.K,8],dtype=np.float32)
+            self.C= np.random.standard_normal(size=(self.K,8))
 
     def f(self, x):
         if x >= 0:
@@ -43,26 +41,24 @@ class DBGD():
             return np.exp(x) / (1 + np.exp(x))
     def initial(self):
         if self.melo==0:
-            self.C=np.zeros((self.K,8),dtype=np.float32)#np.random.random((self.K,2))
+            self.C=np.zeros((self.K,8),dtype=np.float32)
         else:
-            self.C =  np.random.normal(loc=0.0,scale=1.0/8,size=(self.K,8))#np.ones((self.K, 8), dtype=np.float64)
+            self.C =  np.random.normal(loc=0.0,scale=1.0/8,size=(self.K,8))
         self.r=np.zeros([self.K])
     def cal_Csum(self,i,j):
         sum=0.0
         for k in range(self.dim//2):
             sum+=self.C[i][k*2]*self.C[j][k*2+1]-self.C[j][k*2]*self.C[i][k*2+1]
         return sum
-    def sampling(self,alpha,eta,tau,meta,delta,save_rate=1):#(self,alpha,eta,tau,meta,delta)
+    def sampling(self,alpha,eta,tau,meta,delta,save_rate=1):
         self.initial()
         self.eta=eta
         self.meta=eta
-        #self.C*=delta
         Armx=[]
         Army=[]
         NDCG3=[]
         NDCG5=[]
-        # print("random:",np.random.random(1))
-        #print("start random sampling")
+
         top1cor=[]
         top1dis=[]
         ktau=[]
@@ -87,7 +83,7 @@ class DBGD():
             delta = ot - self.f(self.r[xt] - self.r[yt] + Csum)
 
             xt_new = self.r[xt] + self.eta * delta
-            yt_new = self.r[yt] - self.eta * delta  # *self.alpha*(1-ot-self.f(self.r[yt]-self.r[xt]))
+            yt_new = self.r[yt] - self.eta * delta
             self.r[xt] = xt_new
             self.r[yt] = yt_new
             if self.dim > 0:
@@ -115,27 +111,8 @@ class DBGD():
         if save_rate==1:
             return self.r,self.C,[top1cor,reg,Armx,Army],np.array(All_ratings)
         else:
-            return [top1cor,NDCG3,NDCG5,reg,Armx,Army]#,[stop1cor,stop1dis,sktau],[gtop1cor,gtop1dis,gktau]
+            return [top1cor,NDCG3,NDCG5,reg,Armx,Army]
 
-
-    def query(self,x,y,t):
-        #random.seed(self.seed)
-
-        if self.adver==False:
-            return np.random.binomial(1,p=self.P[x][y])
-
-    def tran_best_correct(self,pre,true,K):
-        return self.Perror(pre,K)
-
-    def tran_best_index(self,pre,true):
-
-        pre_best = np.max(pre)
-        pre_best_indexs = np.argwhere(pre == pre_best).reshape(-1).tolist()
-        x=[]
-        for index in pre_best_indexs:
-            x.append(self.ranking[index])
-        x=np.array(x)
-        return x.mean()
 
     def get_ranking(self,Borda):
         Bordar=np.sort(-Borda)
@@ -149,28 +126,4 @@ class DBGD():
         Ranking = np.array(Ranking)
         return Ranking
 
-    def Perror(self, pre, K):
-        F_error = 0
-        pre_P = np.zeros([self.K, self.K])
-        true_rank = np.argsort(-self.true_theta)[0:K]
-        for l in range(K):
-            i = true_rank[l]
-            for g in range(K):
-                j = true_rank[g]
-                if self.melo == 0:
-                    pre_P[i, j] = self.f(pre[i] - pre[j])
-                else:
-                    pre_P[i, j] = self.f(
-                        pre[i] - pre[j] + self.C[i][0] * self.C[j][1] - self.C[j][0] * self.C[i][1])
-                F_error += np.square(pre_P[i, j] - self.P[i, j])
-        F_error = np.sqrt(F_error)
-        return F_error
 
-    def total_rank(self, pre, true, K):
-        true_top = np.argsort(-true)[0:K]
-        pre_top = np.argsort(-pre)[0:K]
-
-        interlist = list(set(true_top) & set(pre_top))
-
-        # tau, p_value = stats.weightedtau(true, pre)
-        return len(interlist)
