@@ -62,7 +62,8 @@ python compare_gamma.py
 
 You can get the results of different C of our MaxIn-mElo on an intransitive game by running:
 ```
-python compare_c.py
+sh run_c.sh
+python C_plot.py
 ```
 
 ##### Comparison of different batch size $\tau$
